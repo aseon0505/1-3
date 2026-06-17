@@ -1,4 +1,1 @@
-streamlit
-google-generativeai
-streamlit
-pandas
+streamlit>=1.36.0
