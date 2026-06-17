@@ -2,239 +2,269 @@ import streamlit as st
 import random
 
 st.set_page_config(
-    page_title="Eco Money",
-    page_icon="♻️",
+    page_title="Eco Money Challenge",
+    page_icon="🌎",
     layout="wide"
 )
 
-# ----------------------
-# 초기 데이터
-# ----------------------
-
-quiz_data = [
-    {
-        "type": "OX",
-        "question": "깨끗이 씻은 페트병은 재활용이 가능하다.",
-        "answer": "O",
-        "explanation": "페트병은 내용물을 비우고 씻은 후 배출해야 재활용이 가능합니다."
-    },
-    {
-        "type": "OX",
-        "question": "음식물이 묻은 종이는 종이류로 재활용할 수 있다.",
-        "answer": "X",
-        "explanation": "오염된 종이는 일반 쓰레기로 버려야 합니다."
-    },
-    {
-        "type": "MC",
-        "question": "우유팩은 어디에 버려야 할까요?",
-        "options": [
-            "일반 쓰레기",
-            "종이팩 수거함",
-            "플라스틱",
-            "캔류"
-        ],
-        "answer": "종이팩 수거함",
-        "explanation": "우유팩은 일반 종이와 분리하여 종이팩 수거함에 배출합니다."
-    },
-    {
-        "type": "MC",
-        "question": "배터리는 어떻게 버려야 할까요?",
-        "options": [
-            "일반 쓰레기",
-            "음식물 쓰레기",
-            "폐건전지 수거함",
-            "플라스틱"
-        ],
-        "answer": "폐건전지 수거함",
-        "explanation": "배터리는 전용 수거함에 배출해야 합니다."
-    },
-    {
-        "type": "OX",
-        "question": "캔은 내용물을 비우고 버려야 한다.",
-        "answer": "O",
-        "explanation": "내용물을 비우고 헹군 후 배출하는 것이 좋습니다."
-    },
-    {
-        "type": "MC",
-        "question": "깨진 유리는 어디에 버려야 할까요?",
-        "options": [
-            "유리병 수거함",
-            "일반 쓰레기",
-            "플라스틱",
-            "종이류"
-        ],
-        "answer": "일반 쓰레기",
-        "explanation": "깨진 유리는 재활용되지 않으므로 일반 쓰레기로 배출합니다."
-    }
-]
-
-shop_items = [
-    ("에코 스티커", 1000),
-    ("재활용 배지", 2000),
-    ("친환경 텀블러", 3000),
-    ("에코 노트", 4000),
-    ("대나무 칫솔 세트", 5000),
-    ("재사용 장바구니", 6000),
-    ("에코 키링", 7000),
-    ("친환경 물병", 8000),
-    ("태양광 손전등", 9000),
-    ("친환경 선물 상자", 10000),
-]
-
-# ----------------------
-# 세션 상태
-# ----------------------
-
+# ---------------------------
+# 초기 상태
+# ---------------------------
 if "money" not in st.session_state:
     st.session_state.money = 0
+
+if "answered" not in st.session_state:
+    st.session_state.answered = False
+
+if "current_question" not in st.session_state:
+    st.session_state.current_question = None
+
+if "remaining_questions" not in st.session_state:
+
+    questions = []
+
+    # ---------------------------
+    # OX 문제 50개
+    # ---------------------------
+    for i in range(1, 51):
+        questions.append({
+            "type": "OX",
+            "question": f"플라스틱 병은 내용물을 비우고 버려야 한다. ({i})",
+            "answer": "O",
+            "explanation": "플라스틱 병은 내용물을 비우고 배출해야 재활용이 가능합니다."
+        })
+
+    # ---------------------------
+    # 객관식 50개
+    # ---------------------------
+    for i in range(51, 101):
+        questions.append({
+            "type": "MCQ",
+            "question": f"재활용이 가능한 것은 무엇일까요? ({i})",
+            "options": [
+                "깨끗한 종이",
+                "음식물 묻은 종이",
+                "일반 쓰레기",
+                "오염된 비닐"
+            ],
+            "answer": "깨끗한 종이",
+            "explanation": "깨끗한 종이는 재활용 가능하지만 오염된 종이는 일반쓰레기입니다."
+        })
+
+    random.shuffle(questions)
+
+    st.session_state.remaining_questions = questions
 
 if "inventory" not in st.session_state:
     st.session_state.inventory = []
 
-if "current_quiz" not in st.session_state:
-    st.session_state.current_quiz = random.choice(quiz_data)
+# ---------------------------
+# 스타일
+# ---------------------------
 
-# ----------------------
-# 제목
-# ----------------------
+st.markdown("""
+<style>
 
-st.title("♻️ Eco Money")
-st.subheader("올바른 분리수거를 배우고 돈을 모아보세요!")
+.main-title{
+font-size:45px;
+font-weight:bold;
+color:#2e7d32;
+text-align:center;
+}
 
-# ----------------------
-# 퀴즈
-# ----------------------
+.money-box{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#2e7d32;
+color:white;
+padding:15px;
+border-radius:15px;
+font-size:22px;
+font-weight:bold;
+z-index:9999;
+}
 
-quiz = st.session_state.current_quiz
+.shop-card{
+padding:15px;
+border-radius:12px;
+border:2px solid #ddd;
+margin-bottom:10px;
+}
 
-st.markdown("---")
-st.header("🧠 분리수거 퀴즈")
+</style>
+""", unsafe_allow_html=True)
 
-st.write(f"### {quiz['question']}")
+# ---------------------------
+# 우측 하단 돈 표시
+# ---------------------------
 
-if quiz["type"] == "OX":
+st.markdown(
+f"""
+<div class="money-box">
+💰 {st.session_state.money:,} 원
+</div>
+""",
+unsafe_allow_html=True
+)
 
-    answer = st.radio(
-        "정답 선택",
-        ["O", "X"],
-        key="quiz_answer"
+# ---------------------------
+# 메뉴
+# ---------------------------
+
+menu = st.sidebar.radio(
+    "메뉴",
+    ["🏠 HOME", "📝 QUIZ", "🛒 SHOP", "🎒 MY ITEMS"]
+)
+
+# ---------------------------
+# HOME
+# ---------------------------
+
+if menu == "🏠 HOME":
+
+    st.markdown(
+        '<p class="main-title">🌎 Eco Money Challenge 🌎</p>',
+        unsafe_allow_html=True
     )
 
-else:
-
-    answer = st.radio(
-        "정답 선택",
-        quiz["options"],
-        key="quiz_answer"
+    st.image(
+        "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200",
+        use_container_width=True
     )
 
-if st.button("제출하기"):
+    st.success(
+        "올바른 분리수거를 배우고 돈을 모아 친환경 아이템을 구매해보세요!"
+    )
 
-    try:
+    total = 100
+    solved = total - len(st.session_state.remaining_questions)
 
-        if answer == quiz["answer"]:
+    st.progress(solved / total)
 
-            st.session_state.money += 300
+    st.write(f"진행도 : {solved} / {total}")
 
-            st.success("정답입니다! +300원")
+# ---------------------------
+# QUIZ
+# ---------------------------
+
+elif menu == "📝 QUIZ":
+
+    st.header("♻️ 분리수거 퀴즈")
+
+    if len(st.session_state.remaining_questions) == 0:
+        st.success("🎉 모든 문제를 완료했습니다!")
+        st.balloons()
+
+    else:
+
+        if st.session_state.current_question is None:
+            st.session_state.current_question = st.session_state.remaining_questions.pop()
+
+        q = st.session_state.current_question
+
+        st.subheader(q["question"])
+
+        if q["type"] == "OX":
+
+            answer = st.radio(
+                "정답 선택",
+                ["O", "X"],
+                key=q["question"]
+            )
 
         else:
 
-            st.session_state.money = max(
-                0,
-                st.session_state.money - 100
+            answer = st.radio(
+                "정답 선택",
+                q["options"],
+                key=q["question"]
             )
 
-            st.error("오답입니다! -100원")
-            st.info(f"해설: {quiz['explanation']}")
+        if st.button("제출"):
 
-        st.session_state.current_quiz = random.choice(
-            quiz_data
-        )
+            if answer == q["answer"]:
 
-        st.rerun()
-
-    except Exception as e:
-        st.error(f"오류 발생: {e}")
-
-# ----------------------
-# 상점
-# ----------------------
-
-st.markdown("---")
-st.header("🛒 친환경 상점")
-
-for item, price in shop_items:
-
-    col1, col2, col3 = st.columns([3, 1, 1])
-
-    with col1:
-        st.write(item)
-
-    with col2:
-        st.write(f"{price}원")
-
-    with col3:
-
-        if st.button(
-            f"구매",
-            key=item
-        ):
-
-            if st.session_state.money >= price:
-
-                st.session_state.money -= price
-
-                st.session_state.inventory.append(
-                    item
-                )
-
-                st.success(
-                    f"{item} 구매 완료!"
-                )
+                st.success("정답입니다! +300원")
+                st.session_state.money += 300
 
             else:
 
-                st.warning(
-                    "돈이 부족합니다."
+                st.error("틀렸습니다! -100원")
+                st.session_state.money = max(
+                    0,
+                    st.session_state.money - 100
                 )
 
-# ----------------------
-# 인벤토리
-# ----------------------
+            st.info("해설")
+            st.write(q["explanation"])
 
-st.markdown("---")
-st.header("🎁 구매한 물건")
+            st.session_state.current_question = None
 
-if st.session_state.inventory:
+# ---------------------------
+# SHOP
+# ---------------------------
 
-    for item in st.session_state.inventory:
-        st.write("✅", item)
+elif menu == "🛒 SHOP":
 
-else:
-    st.write("아직 구매한 물건이 없습니다.")
+    st.header("🛍️ 친환경 상점")
 
-# ----------------------
-# 우측 하단 돈 표시
-# ----------------------
+    items = [
+        ("대나무 칫솔", 1000),
+        ("에코 텀블러", 2000),
+        ("재활용 노트", 3000),
+        ("친환경 가방", 4000),
+        ("태양광 랜턴", 5000),
+        ("에코 도시락", 6000),
+        ("업사이클 파우치", 7000),
+        ("친환경 의자", 8000),
+        ("미니 태양광 패널", 9000),
+        ("환경 수호자 세트", 10000),
+    ]
 
-st.markdown(
-    f"""
-    <div style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: gold;
-        color: black;
-        padding: 15px;
-        border-radius: 15px;
-        font-size: 24px;
-        font-weight: bold;
-        z-index:9999;
-        box-shadow: 2px 2px 10px gray;
-    ">
-        💰 {st.session_state.money}원
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+    for item, price in items:
+
+        col1, col2 = st.columns([3,1])
+
+        with col1:
+            st.markdown(
+                f"""
+                <div class="shop-card">
+                <h4>{item}</h4>
+                <p>{price:,}원</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        with col2:
+
+            if st.button(
+                f"구매-{item}"
+            ):
+
+                if st.session_state.money >= price:
+
+                    st.session_state.money -= price
+                    st.session_state.inventory.append(item)
+
+                    st.success("구매 완료!")
+
+                else:
+                    st.error("돈이 부족합니다.")
+
+# ---------------------------
+# MY ITEMS
+# ---------------------------
+
+elif menu == "🎒 MY ITEMS":
+
+    st.header("🎁 내가 구매한 물건")
+
+    if len(st.session_state.inventory) == 0:
+        st.info("아직 구매한 물건이 없습니다.")
+
+    else:
+
+        for item in st.session_state.inventory:
+            st.write("✅", item)
