@@ -1,55 +1,34 @@
-# CSS 스타일
-st.markdown("""
-<style>
-.main {
-    background-color: #f5fff7;
-}
+if menu == "홈":
 
-.main-title {
-    text-align: center;
-    color: #1b5e20;
-    font-size: 3rem;
-    font-weight: bold;
-}
+    st.markdown("""
+    <div class="big-banner">
+        <h1>♻️ EcoSort Guide</h1>
+        <h3>무분별한 쓰레기 배출을 줄이고 지구를 지켜요!</h3>
+    </div>
+    """, unsafe_allow_html=True)
 
-.subtitle {
-    text-align: center;
-    color: #4caf50;
-    font-size: 1.2rem;
-}
+    col1, col2 = st.columns(2)
 
-.card {
-    background-color: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-    margin-bottom: 15px;
-}
+    with col1:
+        st.markdown("""
+        <div class="card">
+        <h3>🌍 앱의 목적</h3>
+        <p>
+        쓰레기 문제의 심각성을 이해하고
+        올바른 분리수거 방법을 학습합니다.
+        </p>
+        </div>
+        """, unsafe_allow_html=True)
 
-.big-banner {
-    background: linear-gradient(135deg,#4CAF50,#81C784);
-    color: white;
-    padding: 30px;
-    border-radius: 20px;
-    text-align: center;
-    margin-bottom: 20px;
-}
+    with col2:
+        st.markdown("""
+        <div class="card">
+        <h3>📚 사용 방법</h3>
+        <p>
+        중요성 학습 → 분리수거 가이드 →
+        퀴즈 → 실천 다짐
+        </p>
+        </div>
+        """, unsafe_allow_html=True)
 
-.stButton>button {
-    background-color: #4CAF50;
-    color: white;
-    border-radius: 10px;
-    border: none;
-    padding: 10px 20px;
-    font-weight: bold;
-}
-
-.stButton>button:hover {
-    background-color: #388E3C;
-}
-
-[data-testid="stSidebar"] {
-    background-color: #e8f5e9;
-}
-</style>
-""", unsafe_allow_html=True)
+    st.success("👈 왼쪽 메뉴를 눌러 시작해보세요!")
